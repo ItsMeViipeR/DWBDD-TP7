@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+import sys
+import os
+import urllib.parse
+import sqlite3
+
+# Lire le message posté
+content_length = int(os.environ.get("CONTENT_LENGTH", 0))
+post_data = sys.stdin.read(content_length)
+fields = urllib.parse.parse_qs(post_data)
+message = fields.get("message", [""])[0].strip()
+
+if message:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(script_dir, "chat.db")
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO messages (content) VALUES (?)", (message,))
+    conn.commit()
+    conn.close()
+
+# Rediriger vers la page de chat pour voir le nouveau message
+print("Status: 303 See Other")
+print("Location: /cgi-bin/chat")
+print("")
