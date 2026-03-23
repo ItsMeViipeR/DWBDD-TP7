@@ -4,31 +4,86 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../style/main.css" />
-    <title>Send message</title>
+    <title>Discord Clone Chat</title>
   </head>
   <body>
-    <div class="box">
-      <form action="/cgi-bin/send" method="post">
-        <label for="message">Send a message</label>
-        <textarea
-          type="text"
-          name="message"
-          id="message"
-          placeholder="Your message..."
-          oninput="autoHeight(this)"
-        ></textarea>
-        <button type="submit">Send</button>
-      </form>
+    <div class="app-container">
+      <div class="messages-container" id="chat-display"></div>
+
+      <div class="input-area">
+        <form action="/cgi-bin/send" method="post" id="chat-form">
+          <textarea
+            name="message"
+            id="message"
+            placeholder="Envoyer un message dans #général"
+            rows="1"
+            oninput="autoHeight(this)"
+          ></textarea>
+        </form>
+      </div>
     </div>
 
     <script>
-      /**
-       * @param {HTMLElement} element
-       */
-      const autoHeight = (element) => {
-        element.style.height = "auto";
-        element.style.height = element.scrollHeight + "px";
+      const form = document.getElementById("chat-form");
+      const textarea = document.getElementById("message");
+      const chatDisplay = document.getElementById("chat-display");
+
+      // Auto-resize du textarea
+      const autoHeight = (el) => {
+        el.style.height = "auto";
+        el.style.height = el.scrollHeight + "px";
       };
+
+      // Envoyer avec "Entrée" (sans Shift)
+      textarea.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          form.requestSubmit();
+          console.log("hello there");
+        }
+      });
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const content = textarea.value.strip
+          ? textarea.value.strip()
+          : textarea.value.trim();
+        if (!content) return;
+
+        const formData = new URLSearchParams(new FormData(form));
+        try {
+          await fetch("/cgi-bin/send", { method: "POST", body: formData });
+          textarea.value = "";
+          textarea.style.height = "auto";
+          refreshMessages();
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      const refreshMessages = async () => {
+        try {
+          const response = await fetch("/cgi-bin/chat");
+          const htmlText = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlText, "text/html");
+          const newContent = doc.getElementById("chat-display").innerHTML;
+
+          if (chatDisplay.innerHTML !== newContent) {
+            const isAtBottom =
+              chatDisplay.scrollHeight - chatDisplay.scrollTop <=
+              chatDisplay.clientHeight + 100;
+            chatDisplay.innerHTML = newContent;
+            if (isAtBottom) chatDisplay.scrollTop = chatDisplay.scrollHeight;
+          }
+        } catch (err) {
+          console.warn(err);
+        }
+      };
+
+      setInterval(refreshMessages, 1000);
+      // Premier chargement
+      refreshMessages();
     </script>
   </body>
 </html>
