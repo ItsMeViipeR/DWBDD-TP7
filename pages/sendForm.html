@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../style/main.css" />
+    <title>Send message</title>
+  </head>
+  <body>
+    <div class="box">
+      <form action="/cgi-bin/send" method="post">
+        <label for="message">Send a message</label>
+        <textarea
+          type="text"
+          name="message"
+          id="message"
+          placeholder="Your message..."
+          oninput="autoHeight(this)"
+        ></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+
+    <script>
+      /**
+       * @param {HTMLElement} element
+       */
+      const autoHeight = (element) => {
+        element.style.height = "auto";
+        element.style.height = element.scrollHeight + "px";
+      };
+    </script>
+  </body>
+</html>
