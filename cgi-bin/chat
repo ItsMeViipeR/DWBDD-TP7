@@ -31,7 +31,7 @@ except Exception as e:
 
 try:
     with open(html_path, "r", encoding="utf-8") as f:
-        html_content = f.read()  # On lit tout d'un coup
+        html_content = f.read()
 except Exception as e:
     html_content = f"<html><body>Erreur lecture HTML: {str(e)}</body></html>"
 
